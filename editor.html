@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor Scelte</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 10px;
+      background: #f4f4f4;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.4rem;
+    }
+    .image-block {
+      background: #fff;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    label {
+      font-weight: bold;
+    }
+    input, select {
+      margin: 5px 0;
+      padding: 5px;
+      width: 95%;
+    }
+    button {
+      margin: 5px 0;
+      padding: 6px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .add-btn {
+      background: #4CAF50;
+      color: white;
+    }
+    .remove-btn {
+      background: #e74c3c;
+      color: white;
+    }
+    .save-btn {
+      background: #3498db;
+      color: white;
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+    }
+    textarea {
+      width: 100%;
+      height: 200px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Editor Scelte JSON</h1>
+  <div>
+    <label for="jsonFile">Carica file scelte.json:</label>
+    <input type="file" id="jsonFile" accept=".json">
+  </div>
+
+  <div id="editor"></div>
+
+  <button class="add-btn" onclick="addImage()">➕ Aggiungi Immagine</button>
+  <button class="save-btn" onclick="saveJSON()">💾 Salva JSON</button>
+
+  <textarea id="output" readonly></textarea>
+
+  <script>
+    let data = {
+      start: "img1",
+      images: {}
+    };
+
+    // Carica JSON da file
+    document.getElementById("jsonFile").addEventListener("change", function(evt) {
+      const file = evt.target.files[0];
+      const reader = new FileReader();
+      reader.onload = e => {
+        data = JSON.parse(e.target.result);
+        renderEditor();
+      };
+      reader.readAsText(file);
+    });
+
+    function renderEditor() {
+      const editor = document.getElementById("editor");
+      editor.innerHTML = "";
+      Object.keys(data.images).forEach(imgId => {
+        const imgData = data.images[imgId];
+        const div = document.createElement("div");
+        div.className = "image-block";
+        div.innerHTML = `
+          <label>ID immagine:</label>
+          <input type="text" value="${imgId}" onchange="updateId('${imgId}', this.value)">
+          <label>File immagine:</label>
+          <input type="text" value="${imgData.src}" onchange="updateSrc('${imgId}', this.value)">
+          <div><b>Scelte:</b></div>
+          <div id="choices-${imgId}"></div>
+          <button class="add-btn" onclick="addChoice('${imgId}')">+ Aggiungi scelta</button>
+          <button class="remove-btn" onclick="removeImage('${imgId}')">🗑 Rimuovi immagine</button>
+        `;
+        editor.appendChild(div);
+        renderChoices(imgId);
+      });
+    }
+
+    function renderChoices(imgId) {
+      const container = document.getElementById("choices-" + imgId);
+      container.innerHTML = "";
+      const choices = data.images[imgId].choices || {};
+      Object.keys(choices).forEach(choiceKey => {
+        const nextImg = choices[choiceKey];
+        const choiceDiv = document.createElement("div");
+        choiceDiv.innerHTML = `
+          <label>Pulsante:</label>
+          <input type="text" value="${choiceKey}" onchange="updateChoiceKey('${imgId}', '${choiceKey}', this.value)">
+          <label>Destinazione:</label>
+          <input type="text" value="${nextImg}" onchange="updateChoiceTarget('${imgId}', '${choiceKey}', this.value)">
+          <button class="remove-btn" onclick="removeChoice('${imgId}', '${choiceKey}')">Rimuovi</button>
+        `;
+        container.appendChild(choiceDiv);
+      });
+    }
+
+    function updateId(oldId, newId) {
+      if (data.images[newId]) {
+        alert("ID già esistente!");
+        return;
+      }
+      data.images[newId] = data.images[oldId];
+      delete data.images[oldId];
+      renderEditor();
+    }
+
+    function updateSrc(imgId, newSrc) {
+      data.images[imgId].src = newSrc;
+    }
+
+    function addImage() {
+      const newId = "img" + (Object.keys(data.images).length + 1);
+      data.images[newId] = { src: "images/" + newId + ".jpg", choices: {} };
+      renderEditor();
+    }
+
+    function removeImage(imgId) {
+      delete data.images[imgId];
+      renderEditor();
+    }
+
+    function addChoice(imgId) {
+      const choiceKey = "alto";
+      data.images[imgId].choices[choiceKey] = "img1";
+      renderChoices(imgId);
+    }
+
+    function updateChoiceKey(imgId, oldKey, newKey) {
+      const choices = data.images[imgId].choices;
+      choices[newKey] = choices[oldKey];
+      delete choices[oldKey];
+      renderChoices(imgId);
+    }
+
+    function updateChoiceTarget(imgId, key, newTarget) {
+      data.images[imgId].choices[key] = newTarget;
+    }
+
+    function removeChoice(imgId, key) {
+      delete data.images[imgId].choices[key];
+      renderChoices(imgId);
+    }
+
+    function saveJSON() {
+      const jsonStr = JSON.stringify(data, null, 2);
+      document.getElementById("output").value = jsonStr;
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "scelte.json";
+      link.click();
+    }
+  </script>
+</body>
+</html>

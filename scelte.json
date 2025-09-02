@@ -1,0 +1,40 @@
+{
+  "start": "img1",
+  "images": {
+    "img1": {
+      "src": "images/img1.jpg",
+      "choices": {
+        "alto": "img2",
+        "centro": "img4",
+        "basso": "img1"
+      }
+    },
+    "img2": {
+      "src": "images/img2.jpg",
+      "choices": {
+        "alto": "img3",
+        "centro": "img4"
+      }
+    },
+    "img3": {
+      "src": "images/img3.jpg",
+      "choices": {
+        "alto": "img1"
+      }
+    },
+    "img4": {
+      "src": "images/img4.jpg",
+      "choices": {
+        "centro": "img5",
+        "basso": "img1"
+      }
+    },
+    "img5": {
+      "src": "images/img5.jpg",
+      "choices": {
+        "alto": "img3",
+        "basso": "img1"
+      }
+    }
+  }
+}
