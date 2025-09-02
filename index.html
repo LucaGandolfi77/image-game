@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Semplice Navigatore Immagini</title>
+    <style>
+        /* CSS per il layout e lo stile */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #2c3e50;
+            overflow: hidden; /* Evita lo scrolling */
+            position: relative;
+        }
+
+        .image-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+            margin: auto;
+        }
+
+        .buttons-container {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .nav-button {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .nav-button:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        /* Prevenzione del zoom su iOS e Android */
+        @media (max-width: 768px) {
+            .nav-button {
+                width: 60px;
+                height: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="image-container">
+        <img id="mainImage" src="https://picsum.photos/800/600?random=1" alt="Immagine Principale">
+    </div>
+
+    <div class="buttons-container">
+        <div class="nav-button" id="topBtn">1</div>
+        <div class="nav-button" id="midBtn">2</div>
+        <div class="nav-button" id="bottomBtn">3</div>
+    </div>
+
+    <script>
+        // Logica per gestire il cambio di immagine
+        
+        // --- SEZIONE MODIFICABILE: AGGIUNGI QUI LE TUE IMMAGINI ---
+        // Ogni oggetto rappresenta un'immagine e le sue destinazioni.
+        // `id` è il nome dell'immagine (es. 'start', 'end')
+        // `src` è l'URL o il percorso dell'immagine
+        // `destinations` mappa ogni pulsante a un'altra immagine
+        const images = {
+            'start': {
+                src: 'https://picsum.photos/800/600?random=1',
+                destinations: {
+                    'top': 'imageA',
+                    'mid': 'imageB',
+                    'bottom': 'imageC'
+                }
+            },
+            'imageA': {
+                src: 'https://picsum.photos/800/600?random=2',
+                destinations: {
+                    'top': 'start',
+                    'mid': 'imageB',
+                    'bottom': 'imageC'
+                }
+            },
+            'imageB': {
+                src: 'https://picsum.photos/800/600?random=3',
+                destinations: {
+                    'top': 'imageA',
+                    'mid': 'start',
+                    'bottom': 'imageC'
+                }
+            },
+            'imageC': {
+                src: 'https://picsum.photos/800/600?random=4',
+                destinations: {
+                    'top': 'imageA',
+                    'mid': 'imageB',
+                    'bottom': 'start'
+                }
+            }
+        };
+
+        let currentImageId = 'start';
+        const mainImageElement = document.getElementById('mainImage');
+        const topButton = document.getElementById('topBtn');
+        const midButton = document.getElementById('midBtn');
+        const bottomButton = document.getElementById('bottomBtn');
+
+        // Funzione per aggiornare l'immagine visualizzata
+        function updateImage(newImageId) {
+            const newImage = images[newImageId];
+            if (newImage) {
+                mainImageElement.src = newImage.src;
+                currentImageId = newImageId;
+            } else {
+                console.error(`Immagine con ID '${newImageId}' non trovata.`);
+            }
+        }
+
+        // Funzione per gestire il click dei pulsanti
+        function handleButtonClick(buttonId) {
+            // --- SEZIONE MODIFICABILE: LOGICA DI GIOCO ---
+            // Puoi implementare qui una logica più complessa.
+            // Ad esempio, un pulsante potrebbe non essere sempre cliccabile.
+            // if (someCondition) {
+            //     updateImage(images[currentImageId].destinations[buttonId]);
+            // } else {
+            //     alert("Azione non permessa!");
+            // }
+            const destinations = images[currentImageId].destinations;
+            if (destinations[buttonId]) {
+                updateImage(destinations[buttonId]);
+            }
+        }
+        
+        // Associa la funzione di click a ogni pulsante
+        topButton.addEventListener('click', () => handleButtonClick('top'));
+        midButton.addEventListener('click', () => handleButtonClick('mid'));
+        bottomButton.addEventListener('click', () => handleButtonClick('bottom'));
+        
+        // Previeni il zoom su iOS (necessario per un'esperienza a schermo intero)
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        });
+        document.addEventListener('touchend', function(e) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        });
+        let lastTouchEnd = 0;
+        
+        // Inizializza l'applicazione con l'immagine di partenza
+        window.onload = function() {
+            updateImage(currentImageId);
+        };
+
+    </script>
+
+</body>
+</html>
